@@ -14,6 +14,7 @@ export const appConfig: ApplicationConfig = {
 
     provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
 
+    // Anguslar's default HttpClient to execute http requests. This is required for the API calls to work.
     provideHttpClient(withFetch()),
     { provide: API_URL, useValue: 'http://localhost:3000' },
 

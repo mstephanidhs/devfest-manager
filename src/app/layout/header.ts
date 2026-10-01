@@ -5,6 +5,9 @@ import { CartStore } from '../core/cart.store';
 
 @Component({
   selector: 'app-header',
+  // it's the default mode now, so it doe n't need to be specified, but it's good to know that this is the default mode
+  standalone: true,
+  // RouterLinkActive is used to apply styles to the active link
   imports: [RouterLink, RouterLinkActive],
   template: `
     <header class="bg-blue-700 text-white shadow-md">
