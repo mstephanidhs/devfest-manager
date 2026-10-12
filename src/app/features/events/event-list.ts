@@ -20,23 +20,28 @@ import { EventsService } from '../../core/events.service';
       <!-- TODO Mod 2: Use @for to iterate over resource -->
 
       <!-- Static Placeholders for initial verify -->
-      <app-event-card
-        title="Angular Keynote"
-        image="https://via.placeholder.com/600"
-        date="2025-12-26T19:00:00.000Z"
-        (delete)="console.log('Delete clicked')"
-      />
-      <app-event-card
-        title="Signals Deep Dive"
-        image="https://via.placeholder.com/600"
-        date="2025-12-10T09:00:00.000Z"
-        (delete)="console.log('Delete clicked')"
-      />
-      <app-event-card
-        title="Server-Side Rendering at Scale"
-        image="https://via.placeholder.com/600"
-        (delete)="console.log('Delete clicked')"
-      />
+        @if (events.error()) {
+          <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
+            Failed to load events. Is the server running?
+          </div>
+        }
+
+        @if (events.isLoading()) {
+          <div class="text-center py-12 text-gray-500 animate-pulse">Loading events...</div>
+        }
+
+       @if (events.hasValue()) {
+          @for (event of events.value(); track event.id) {
+          <app-event-card
+            [title]="event.title"
+            [image]="event.image"
+            [date]="event.date"
+            (delete)="deleteEvent(event.id)"
+          />
+          } @empty {
+          <p class="col-span-3 text-center text-gray-500">No events found.</p>
+          }
+        } 
     </div>
   `,
 })
@@ -47,4 +52,16 @@ export class EventList {
   searchQuery = signal('');
 
   readonly events = this.eventsService.getEventsResource(this.searchQuery);
+
+  deleteEvent(id: string) {
+    this.eventsService.deleteEvent(id).subscribe({
+      next: () => {
+        this.events.reload()
+      },
+      error(err) {
+        console.error('Delete failed', err);
+        alert('Could not delete event');
+      }
+    });
+  }
 }
