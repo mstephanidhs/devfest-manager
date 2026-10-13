@@ -19,6 +19,14 @@ export class EventsService {
         })
     }
 
+    getEventResource(id: Signal<string>) {
+        return httpResource<DevFestEvent>(() => {
+            const eventId = id();
+            return `${this.apiUrl}/${eventId}`;
+        })
+
+    }
+
     // Unlike promises where the request is made immediately (despite the fact that the promise is not awaited or not awaited), 
     // observable does not execute the code until it is subscribed to
     deleteEvent(id: string) {
