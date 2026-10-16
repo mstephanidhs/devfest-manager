@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { EventsService } from '../../core/events.service';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -7,6 +7,9 @@ import { CartService } from '../../core/cart.service';
 @Component({
   selector: 'app-event-details',
   imports: [CommonModule, RouterLink, DatePipe],
+  // Don't check this compoment unless it is marked dirty (e.g. when the input changes).
+  // This is a performance optimizations
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto min-h-[600px]">
       <!-- Back Button -->
