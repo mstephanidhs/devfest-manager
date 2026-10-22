@@ -8,7 +8,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { routes } from './app.routes';
 import { API_URL } from './core/tokens';
 import { IMAGE_LOADER, ImageLoaderConfig } from '@angular/common';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { provideClientHydration, withEventReplay, withIncrementalHydration } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +33,9 @@ export const appConfig: ApplicationConfig = {
     // withEventReplay() means that any events that happened on the server-rendered page will be 
     // replayed on the client side, so that the user doesn't lose any interactions that happened 
     // before the client took over.
-    provideClientHydration(withEventReplay()),
+    // withIncrementalHydration() means that the client will only hydrate the parts of the page that are visible to the user,
+    // and will defer hydrating the rest of the page until the user scrolls down to it. This is a performance optimization.
+    // It applies also the withEventReplay() strategy
+    provideClientHydration(withIncrementalHydration()),
   ],
 };
