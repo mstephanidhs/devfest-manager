@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/cart.service';
 import { TabGroup } from '../../shared/tabs/tab-group';
 import { Tab } from '../../shared/tabs/tab';
+import { delay, mergeMap, of, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-event-details',
@@ -145,6 +146,46 @@ export class EventDetails {
   readonly eventResource = this.eventsService.getEventResource(this.id);
 
   addToCart() {
-    this.cartService.addTicket(this.id());
+    // this.cartService.addTicket(this.id());
+    this.buyBtnClick$.next();
+  }
+
+  // 1. Create a Triger
+  // The $ sign is a convention to indicate that this is a stream of events (an Observable or Signal).
+  // Subject is a special type of Observable that allows us to emit events manually.
+  private buyBtnClick$ = new Subject<void>();
+
+  constructor() {
+    // 2. Setup the Pipeline
+    // Every value that gets through that subject will be passed into that pipe
+    // The pipe method allows you to chain multiple operators together to transform, 
+    // filter, or handle values as they flow through an observable stream. Each value 
+    // that enters the observable will pass through the pipe and can be processed by 
+    // various operators.
+    // 1. mergeMap is an operator that takes each value emitted by the source observable 
+    // (in this case, buyBtnClick$) and maps it to a new observable. It starts them
+    // basically in parallel and merges their results into a single observable stream.
+    // 2. concatMap is an operator that takes each value emitted by the source observable 
+    // (in this case, buyBtnClick$) and maps it to a new observable, but it queues them up 
+    // and waits for the previous one to complete before starting the next one.
+    // 3. exhaustMap is an operator that takes each value emitted by the source observable 
+    // (in this case, buyBtnClick$) and maps it to a new observable, but it ignores any new 
+    // values emitted by the source observable while the previous one is still running. It 
+    // will only process one at a time and ignore any new clicks until the current transaction 
+    // is complete.
+    // 4. switchMap is an operator that takes each value emitted by the source observable
+    // (in this case, buyBtnClick$) and maps it to a new observable, but it cancels any 
+    // previous observables that are still running. It will only process the latest click 
+    // and cancel any previous transactions that are still running.
+    this.buyBtnClick$.pipe(
+      mergeMap(() => {
+        console.log('Transcation Started...');
+        return of('Transction Complete!').pipe(delay(2000));
+      })
+    ).subscribe({
+      next: (result) => {
+        console.log('✅', result);
+      }
+    })
   }
 }
