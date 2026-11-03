@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/cart.service';
 import { TabGroup } from '../../shared/tabs/tab-group';
 import { Tab } from '../../shared/tabs/tab';
-import { delay, mergeMap, of, Subject } from 'rxjs';
+import { catchError, delay, exhaustMap, mergeMap, of, Subject, throwError } from 'rxjs';
 
 @Component({
   selector: 'app-event-details',
@@ -177,15 +177,35 @@ export class EventDetails {
     // (in this case, buyBtnClick$) and maps it to a new observable, but it cancels any 
     // previous observables that are still running. It will only process the latest click 
     // and cancel any previous transactions that are still running.
-    this.buyBtnClick$.pipe(
-      mergeMap(() => {
-        console.log('Transcation Started...');
-        return of('Transction Complete!').pipe(delay(2000));
-      })
-    ).subscribe({
-      next: (result) => {
-        console.log('✅', result);
-      }
-    })
+    // this.buyBtnClick$.pipe(
+    //   mergeMap(() => {
+    //     console.log('Transcation Started...');
+    //     return of('Transction Complete!').pipe(delay(2000));
+    //   })
+    // ).subscribe({
+    //   next: (result) => {
+    //     console.log('✅', result);
+    //   }
+    // })
+
+    this.buyBtnClick$
+      .pipe(
+        exhaustMap(() => {
+          console.log('🔄 Trying to buy...');
+          // Simulate an API Error
+          // catching the error here will prevent the stream from dying
+          return throwError(() => new Error('Credit Card Declined')).pipe(delay(500), catchError(() => of('Caught')));
+        }),
+        // takeUntilDestroyed(),
+
+        // catchError is an operator that allows you to handle errors that occur in the observable stream.
+        // but it will also complete the stream, so if you want to continue listening for new events, you 
+        // need to return a new observable (like of('Caught')) that emits a value and completes.
+        // catchError(() => of('Caught'))
+      )
+      .subscribe({
+        next: (res) => console.log(res),
+        error: (err) => console.error('☠️ Stream Died:', err),
+      });
   }
 }
