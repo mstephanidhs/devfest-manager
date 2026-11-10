@@ -6,6 +6,7 @@ import { CartService } from '../../core/cart.service';
 import { TabGroup } from '../../shared/tabs/tab-group';
 import { Tab } from '../../shared/tabs/tab';
 import { catchError, delay, exhaustMap, mergeMap, of, Subject, throwError } from 'rxjs';
+import { BooksStore } from '../../core/todo.store';
 
 @Component({
   selector: 'app-event-details',
@@ -141,71 +142,77 @@ export class EventDetails {
   private readonly eventsService = inject(EventsService);
   private readonly cartService = inject(CartService);
 
+  private readonly bookStore = inject(BooksStore);
+
   readonly id = input.required<string>();
 
   readonly eventResource = this.eventsService.getEventResource(this.id);
 
+  constructor() {
+
+  }
+
   addToCart() {
-    // this.cartService.addTicket(this.id());
-    this.buyBtnClick$.next();
+    this.cartService.addTicket(this.id());
+    // this.buyBtnClick$.next();
   }
 
   // 1. Create a Triger
   // The $ sign is a convention to indicate that this is a stream of events (an Observable or Signal).
   // Subject is a special type of Observable that allows us to emit events manually.
-  private buyBtnClick$ = new Subject<void>();
+  // private buyBtnClick$ = new Subject<void>();
 
-  constructor() {
-    // 2. Setup the Pipeline
-    // Every value that gets through that subject will be passed into that pipe
-    // The pipe method allows you to chain multiple operators together to transform, 
-    // filter, or handle values as they flow through an observable stream. Each value 
-    // that enters the observable will pass through the pipe and can be processed by 
-    // various operators.
-    // 1. mergeMap is an operator that takes each value emitted by the source observable 
-    // (in this case, buyBtnClick$) and maps it to a new observable. It starts them
-    // basically in parallel and merges their results into a single observable stream.
-    // 2. concatMap is an operator that takes each value emitted by the source observable 
-    // (in this case, buyBtnClick$) and maps it to a new observable, but it queues them up 
-    // and waits for the previous one to complete before starting the next one.
-    // 3. exhaustMap is an operator that takes each value emitted by the source observable 
-    // (in this case, buyBtnClick$) and maps it to a new observable, but it ignores any new 
-    // values emitted by the source observable while the previous one is still running. It 
-    // will only process one at a time and ignore any new clicks until the current transaction 
-    // is complete.
-    // 4. switchMap is an operator that takes each value emitted by the source observable
-    // (in this case, buyBtnClick$) and maps it to a new observable, but it cancels any 
-    // previous observables that are still running. It will only process the latest click 
-    // and cancel any previous transactions that are still running.
-    // this.buyBtnClick$.pipe(
-    //   mergeMap(() => {
-    //     console.log('Transcation Started...');
-    //     return of('Transction Complete!').pipe(delay(2000));
-    //   })
-    // ).subscribe({
-    //   next: (result) => {
-    //     console.log('✅', result);
-    //   }
-    // })
+  // constructor() {
+  //   // 2. Setup the Pipeline
+  //   // Every value that gets through that subject will be passed into that pipe
+  //   // The pipe method allows you to chain multiple operators together to transform, 
+  //   // filter, or handle values as they flow through an observable stream. Each value 
+  //   // that enters the observable will pass through the pipe and can be processed by 
+  //   // various operators.
+  //   // 1. mergeMap is an operator that takes each value emitted by the source observable 
+  //   // (in this case, buyBtnClick$) and maps it to a new observable. It starts them
+  //   // basically in parallel and merges their results into a single observable stream.
+  //   // 2. concatMap is an operator that takes each value emitted by the source observable 
+  //   // (in this case, buyBtnClick$) and maps it to a new observable, but it queues them up 
+  //   // and waits for the previous one to complete before starting the next one.
+  //   // 3. exhaustMap is an operator that takes each value emitted by the source observable 
+  //   // (in this case, buyBtnClick$) and maps it to a new observable, but it ignores any new 
+  //   // values emitted by the source observable while the previous one is still running. It 
+  //   // will only process one at a time and ignore any new clicks until the current transaction 
+  //   // is complete.
+  //   // 4. switchMap is an operator that takes each value emitted by the source observable
+  //   // (in this case, buyBtnClick$) and maps it to a new observable, but it cancels any 
+  //   // previous observables that are still running. It will only process the latest click 
+  //   // and cancel any previous transactions that are still running.
+  //   // this.buyBtnClick$.pipe(
+  //   //   mergeMap(() => {
+  //   //     console.log('Transcation Started...');
+  //   //     return of('Transction Complete!').pipe(delay(2000));
+  //   //   })
+  //   // ).subscribe({
+  //   //   next: (result) => {
+  //   //     console.log('✅', result);
+  //   //   }
+  //   // })
 
-    this.buyBtnClick$
-      .pipe(
-        exhaustMap(() => {
-          console.log('🔄 Trying to buy...');
-          // Simulate an API Error
-          // catching the error here will prevent the stream from dying
-          return throwError(() => new Error('Credit Card Declined')).pipe(delay(500), catchError(() => of('Caught')));
-        }),
-        // takeUntilDestroyed(),
+  //   this.buyBtnClick$
+  //     .pipe(
+  //       exhaustMap(() => {
+  //         console.log('🔄 Trying to buy...');
+  //         // Simulate an API Error
+  //         // catching the error here will prevent the stream from dying
+  //         return throwError(() => new Error('Credit Card Declined')).pipe(delay(500), catchError(() => of('Caught')));
+  //       }),
+  //       // takeUntilDestroyed(),
 
-        // catchError is an operator that allows you to handle errors that occur in the observable stream.
-        // but it will also complete the stream, so if you want to continue listening for new events, you 
-        // need to return a new observable (like of('Caught')) that emits a value and completes.
-        // catchError(() => of('Caught'))
-      )
-      .subscribe({
-        next: (res) => console.log(res),
-        error: (err) => console.error('☠️ Stream Died:', err),
-      });
-  }
+  //       // catchError is an operator that allows you to handle errors that occur in the observable stream.
+  //       // but it will also complete the stream, so if you want to continue listening for new events, you 
+  //       // need to return a new observable (like of('Caught')) that emits a value and completes.
+  //       // catchError(() => of('Caught'))
+  //     )
+  //     .subscribe({
+  //       next: (res) => console.log(res),
+  //       error: (err) => console.error('☠️ Stream Died:', err),
+  //     });
+  // }
 }
