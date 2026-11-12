@@ -20,3 +20,14 @@ export function withRequestStatus() {
         }))
     )
 }
+
+// Helpers for state updates
+export function setPending(): RequestStatusState {
+    return { requestStatus: 'pending' };
+}
+export function setFulfilled(): RequestStatusState {
+    return { requestStatus: 'fullfilled' };
+}
+export function setError(error: string): RequestStatusState {
+    return { requestStatus: { error } };
+}

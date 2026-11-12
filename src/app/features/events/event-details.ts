@@ -2,11 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core
 import { EventsService } from '../../core/events.service';
 import { CommonModule, DatePipe, NgOptimizedImage } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { CartService } from '../../core/cart.service';
 import { TabGroup } from '../../shared/tabs/tab-group';
 import { Tab } from '../../shared/tabs/tab';
-import { catchError, delay, exhaustMap, mergeMap, of, Subject, throwError } from 'rxjs';
-import { BooksStore } from '../../core/todo.store';
+import { CartStore } from '../../core/cart.store';
 
 @Component({
   selector: 'app-event-details',
@@ -123,9 +121,10 @@ import { BooksStore } from '../../core/todo.store';
             @defer(hydrate on interaction) {
             <button
               (click)="addToCart()"
+              [disabled]="cartStore.isPending()"
               class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-lg transition"
             >
-              Buy Tickets
+              @if (cartStore.isPending()) { Syncing... } @else { Buy Ticket }
             </button>
             } @placeholder {
               <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold opacity-90">
@@ -140,9 +139,7 @@ import { BooksStore } from '../../core/todo.store';
 })
 export class EventDetails {
   private readonly eventsService = inject(EventsService);
-  private readonly cartService = inject(CartService);
-
-  private readonly bookStore = inject(BooksStore);
+  readonly cartStore = inject(CartStore);
 
   readonly id = input.required<string>();
 
@@ -153,7 +150,7 @@ export class EventDetails {
   }
 
   addToCart() {
-    this.cartService.addTicket(this.id());
+    this.cartStore.addToCart({ eventId: this.id() });
     // this.buyBtnClick$.next();
   }
 
